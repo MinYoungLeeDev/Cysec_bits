@@ -1,0 +1,10 @@
+command = "grep 'Failed password' /var/log/auth.log | awk '{print $1, $2, $3, $9}' | sort | uniq -c"
+result = subprocess.run(command, shell=True, capture_output=True, text=True)
+
+for line in result.stdout.splitlines():
+    count, date, time, ip_address = re.match(r'\s*(\d+)\s+(\S+)\s+(\S+)\s+(\S+)', line).groups()
+    count = int(count)
+    
+    if count >= failed_login_threshold:
+        send_alert(f"Possible brute-force attack detected!\n"
+                   f"Date: {date}\nTime: {time}\nIP Address: {ip_address}\nFailed Attempts: {count}")
